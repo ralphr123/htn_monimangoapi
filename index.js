@@ -53,7 +53,7 @@ function sendGroupText(numbers) {
   });
 }
 
-schedule.scheduleJob('*/1 * * * *', function() {
+schedule.scheduleJob('* */1 * * *', function() {
   // sendGroupText(numbers);
   console.log('sms');
 });
