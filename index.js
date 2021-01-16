@@ -1,13 +1,17 @@
 const express = require('express');
 const ToneAnalyzerV3 = require('ibm-watson/tone-analyzer/v3');
 const { IamAuthenticator } = require('ibm-watson/auth');
+const Snoowrap = require('snoowrap');
+const Nexmo = require('nexmo');
+const schedule = require('node-schedule');
+
 require('dotenv').config()
-const snoowrap = require('snoowrap');
 
 const PORT = process.env.PORT || 4000;
 const app = express();
+const stockData = require('./stocks.json');
 
-// Modules
+// MODULES
 const toneAnalyzer = new ToneAnalyzerV3({
   version: '2017-09-21',
   authenticator: new IamAuthenticator({
@@ -17,34 +21,115 @@ const toneAnalyzer = new ToneAnalyzerV3({
   disableSslVerification: true,
 });
 
-const snoo = new snoowrap({
+const reddit = new Snoowrap({
   userAgent: 'moniMango',
-  clientId: process.env.REDKEY,
-  clientSecret: process.env.REDSECRET
+  clientId: process.env.REDID,
+  clientSecret: process.env.REDSECRET,
+  refreshToken: process.env.REDTOKEN
 });
 
-const text = 'Team, I know that times are tough! Product '
-  + 'sales have been disappointing for the past three '
-  + 'quarters. We have a competitive product, but we '
-  + 'need to do a better job of selling it!';
+const nexmo = new Nexmo({
+  apiKey: process.env.NEXMOKEY,
+  apiSecret: process.env.NEXMOSECRET
+});
+
+// END MODULES
+
+const sampleText = require("./sampletext.js");
 
 const toneParams = {
-  toneInput: { 'text': text },
+  toneInput: { 'text': sampleText.text },
   contentType: 'application/json',
+  sentences: false
 };
 
 app.get('/', (req, res) => {
     res.send("This works.");
 });
 
+app.get('/nexmo', (req, res) => {
+  nexmo.message.sendSms('12044106434', '15877183475', "Hello from Vonage.", (err, responseData) => {
+    if (err) {
+        console.log(err);
+        res.sendStatus(401);
+    } else {
+        if(responseData.messages[0]['status'] === "0") {
+            console.log("Message sent successfully.");
+            res.sendStatus(200);
+          } else {
+            console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+            res.sendStatus(401);
+        }
+    }
+  });
+});
+
+app.get('/reddit', (req, res) => {
+  let stocks = {...stockData};
+  let stockTitles = Object.keys(stocks);
+  const subreddits = ['stocks', 'investing', 'wallstreetbets'];
+  const getTopFive = (stockVals) => stockVals.sort((a, b) => b.count - a.count).slice(0, 5);
+
+  subreddits.forEach((subreddit, index) => {
+    reddit.getSubreddit(subreddit).getTop({time: 'day', limit: 100}).then(listings => {
+      for (let i = 0; i < listings.length; i++) {
+        if (!listings[i].title) return;
+        for (let j = 0; j < stockTitles.length; j++) {
+          if (listings[i].title.includes(stockTitles[j]) || listings[i].selftext.includes(stockTitles[j])) {
+            stocks[stockTitles[j]] = {...stocks[stockTitles[j]]};
+            stocks[stockTitles[j]].count++;
+            stocks[stockTitles[j]].text += listings[i].title;
+            stocks[stockTitles[j]].ticker = stockTitles[j].trim();
+          }
+        }
+      }
+      if (index === subreddits.length - 1) {
+        let topFive = getTopFive(Object.values(stocks));
+
+        function formatResponse(ind) {
+          let stock = topFive[ind];
+          toneAnalyzer.tone({
+            toneInput: { 'text': stock.text },
+            contentType: 'application/json',
+            sentences: false
+          }).then(toneAnalysis => {
+                let tone = toneAnalysis.result.document_tone.tones.sort((a, b) => b.score - a.score)[0].tone_name;
+                let action = '';
+
+                stock.text = undefined;
+                delete stock.text;
+
+                if (tone == 'Joy' || tone == 'Confident') action = 'Buy';
+                else if (tone == 'Sadness' || tone == 'Fear' || tone == 'Anger') action = 'Sell';
+                else action = 'Hold';
+
+                topFive[ind] = {...stock, action, tone}
+
+                if (ind === 4) {
+                  res.send(topFive);
+                  return;
+                }
+
+                formatResponse(ind + 1);
+              })
+        }
+        
+        formatResponse(0);
+
+        stocks = {...stockData};
+      }
+    });
+  });
+});
+
 app.get('/tone', (req, res) => {
     toneAnalyzer.tone(toneParams)
-        .then(toneAnalysis => {
-            res.send(JSON.stringify(toneAnalysis, null, 2));
-        })
-        .catch(err => {
-            console.log('error:', err);
-        });
+      .then(toneAnalysis => {
+          res.send(toneAnalysis);
+      })
+      .catch(err => {
+          console.log('error:', err);
+      });
 });
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
