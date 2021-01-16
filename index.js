@@ -35,6 +35,29 @@ const nexmo = new Nexmo({
 
 // END MODULES
 
+const numbers = ['15877183475'];
+
+function sendGroupText(numbers) {
+  numbers.forEach(number => {
+    nexmo.message.sendSms('12044106434', number, "Hello from Vonage.", (err, responseData) => {
+      if (err) {
+          console.log(err);
+      } else {
+          if(responseData.messages[0]['status'] === "0") {
+              console.log("Message sent successfully.");
+            } else {
+              console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+          }
+      }
+    });
+  });
+}
+
+schedule.scheduleJob('*/1 * * * *', function() {
+  // sendGroupText(numbers);
+  console.log('sms');
+});
+
 const sampleText = require("./sampletext.js");
 
 const toneParams = {
