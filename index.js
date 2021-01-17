@@ -56,9 +56,9 @@ function sendGroupText(numbers) {
   });
 }
 
-schedule.scheduleJob('* * */1 * *', function() {
-  console.log('sms');
-});
+// schedule.scheduleJob('* * */1 * *', function() {
+//   console.log('sms');
+// });
 
 const toneParams = {
   toneInput: { 'text': sampleText.text },
