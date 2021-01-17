@@ -61,10 +61,9 @@ function sendGroupText(numbers, ind) {
   }
 }
 
-sendGroupText(newsletterNumbers, 0);
 
 schedule.scheduleJob('* 12 * * 1', function() {
-  console.log('sms');
+  sendGroupText(newsletterNumbers, 0);
 });
 
 const toneParams = {
