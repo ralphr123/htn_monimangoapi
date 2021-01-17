@@ -75,18 +75,18 @@ app.get('/', (req, res) => {
 });
 
 app.post('/newsletter', jsonParser, (req, res) => {
-  newsletterNumbers.push(req.body.number);
-  nexmo.message.sendSms('12044106434', req.body.number, "Welcome to MoniMango's beta texting service! You will recieve a daily message with the top 5 trending stocks on reddit.", (err, responseData) => {
-    if (err) {
-        console.log(err);
-    } else {
-        if(responseData.messages[0]['status'] === "0") {
-            console.log("Message sent successfully.");
-          } else {
-            console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
-        }
-    }
-  });
+  // newsletterNumbers.push(req.body.number);
+  // nexmo.message.sendSms('12044106434', req.body.number, "Welcome to MoniMango's beta texting service! You will recieve a daily message with the top 5 trending stocks on reddit.", (err, responseData) => {
+  //   if (err) {
+  //       console.log(err);
+  //   } else {
+  //       if(responseData.messages[0]['status'] === "0") {
+  //           console.log("Message sent successfully.");
+  //         } else {
+  //           console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+  //       }
+  //   }
+  // });
   res.sendStatus(200);
 });
 
