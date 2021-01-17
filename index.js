@@ -35,7 +35,10 @@ const nexmo = new Nexmo({
 
 // END MODULES
 
-const numbers = ['15877183475'];
+// GLOBALS
+const newsletterNumbers = ['15877183475'];
+const sampleText = require("./sampletext.js");
+
 
 function sendGroupText(numbers) {
   numbers.forEach(number => {
@@ -53,12 +56,9 @@ function sendGroupText(numbers) {
   });
 }
 
-schedule.scheduleJob('* */1 * * *', function() {
-  // sendGroupText(numbers);
+schedule.scheduleJob('* * */1 * *', function() {
   console.log('sms');
 });
-
-const sampleText = require("./sampletext.js");
 
 const toneParams = {
   toneInput: { 'text': sampleText.text },
@@ -68,6 +68,22 @@ const toneParams = {
 
 app.get('/', (req, res) => {
     res.send("This works.");
+});
+
+app.post('/newsletter', (req, res) => {
+  newsletterNumbers.push(req.body.number);
+  nexmo.message.sendSms('12044106434', req.body.number, "Welcome to MoniMango's beta texting service! You will recieve a daily message with the top 5 trending stocks on reddit.", (err, responseData) => {
+    if (err) {
+        console.log(err);
+    } else {
+        if(responseData.messages[0]['status'] === "0") {
+            console.log("Message sent successfully.");
+          } else {
+            console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+        }
+    }
+  });
+  res.sendStatus(200);
 });
 
 app.get('/nexmo', (req, res) => {
