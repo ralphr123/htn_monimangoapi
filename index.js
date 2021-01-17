@@ -4,12 +4,15 @@ const { IamAuthenticator } = require('ibm-watson/auth');
 const Snoowrap = require('snoowrap');
 const Nexmo = require('nexmo');
 const schedule = require('node-schedule');
+const bodyParser = require('body-parser');
 
 require('dotenv').config()
 
 const PORT = process.env.PORT || 4000;
 const app = express();
 const stockData = require('./stocks.json');
+
+var jsonParser = bodyParser.json()
 
 // MODULES
 const toneAnalyzer = new ToneAnalyzerV3({
@@ -38,6 +41,7 @@ const nexmo = new Nexmo({
 // GLOBALS
 const newsletterNumbers = ['15877183475'];
 const sampleText = require("./sampletext.js");
+const { json } = require('body-parser');
 
 
 function sendGroupText(numbers) {
@@ -70,7 +74,7 @@ app.get('/', (req, res) => {
     res.send("This works.");
 });
 
-app.post('/newsletter', (req, res) => {
+app.post('/newsletter', jsonParser, (req, res) => {
   console.log(req.body);
   res.sendStatus(200);
   // newsletterNumbers.push(req.body.number);
