@@ -128,6 +128,7 @@ app.get('/reddit', (req, res) => {
       }
       if (index === subreddits.length - 1) {
         let topFive = getTopFive(Object.values(stocks));
+        // res.send(topFive);
 
         function formatResponse(ind) {
           let stock = topFive[ind];
@@ -136,7 +137,7 @@ app.get('/reddit', (req, res) => {
             contentType: 'application/json',
             sentences: false
           }).then(toneAnalysis => {
-                let tone = toneAnalysis.result.document_tone.tones.sort((a, b) => b.score - a.score)[0].tone_name;
+                let tone = toneAnalysis.result.document_tone.tones.sort((a, b) => b.score - a.score).length ? toneAnalysis.result.document_tone.tones.sort((a, b) => b.score - a.score)[0].tone_name : "Tentative";
                 let action = '';
 
                 stock.text = undefined;
@@ -155,6 +156,7 @@ app.get('/reddit', (req, res) => {
 
                 formatResponse(ind + 1);
               })
+            .catch(err => console.log(err, ind));
         }
         
         formatResponse(0);
