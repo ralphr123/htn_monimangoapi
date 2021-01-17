@@ -44,25 +44,28 @@ const sampleText = require("./sampletext.js");
 const { json } = require('body-parser');
 
 
-function sendGroupText(numbers) {
-  numbers.forEach(number => {
-    nexmo.message.sendSms('12044106434', number, "Hello from Vonage.", (err, responseData) => {
+function sendGroupText(numbers, ind) {
+  if (ind < numbers.length) {
+    nexmo.message.sendSms('12044106434', numbers[ind], "Hello from Vonage.", (err, responseData) => {
       if (err) {
           console.log(err);
       } else {
           if(responseData.messages[0]['status'] === "0") {
               console.log("Message sent successfully.");
+              sendGroupText(ind + 1);
             } else {
               console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
           }
       }
     });
-  });
+  }
 }
 
-// schedule.scheduleJob('* * */1 * *', function() {
-//   console.log('sms');
-// });
+sendGroupText(newsletterNumbers, 0);
+
+schedule.scheduleJob('* 12 * * 1', function() {
+  console.log('sms');
+});
 
 const toneParams = {
   toneInput: { 'text': sampleText.text },
