@@ -39,32 +39,32 @@ const nexmo = new Nexmo({
 // END MODULES
 
 // GLOBALS
-const newsletterNumbers = ['15877183475'];
+// const newsletterNumbers = ['15877183475'];
 const sampleText = require("./sampletext.js");
 const { json } = require('body-parser');
 
 
-function sendGroupText(numbers, ind) {
-  if (ind < numbers.length) {
-    nexmo.message.sendSms('12044106434', numbers[ind], "Hello from Vonage.", (err, responseData) => {
-      if (err) {
-          console.log(err);
-      } else {
-          if(responseData.messages[0]['status'] === "0") {
-              console.log("Message sent successfully.");
-              sendGroupText(ind + 1);
-            } else {
-              console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
-          }
-      }
-    });
-  }
-}
+// function sendGroupText(numbers, ind) {
+//   if (ind < numbers.length) {
+//     nexmo.message.sendSms('12044106434', numbers[ind], "Hello from Vonage.", (err, responseData) => {
+//       if (err) {
+//           console.log(err);
+//       } else {
+//           if(responseData.messages[0]['status'] === "0") {
+//               console.log("Message sent successfully.");
+//               sendGroupText(ind + 1);
+//             } else {
+//               console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+//           }
+//       }
+//     });
+//   }
+// }
 
 
-schedule.scheduleJob('* 12 * * 1', function() {
-  sendGroupText(newsletterNumbers, 0);
-});
+// schedule.scheduleJob('* 12 * * 1', function() {
+//   sendGroupText(newsletterNumbers, 0);
+// });
 
 const toneParams = {
   toneInput: { 'text': sampleText.text },
@@ -116,7 +116,7 @@ app.get('/reddit', (req, res) => {
   const getTopFive = (stockVals) => stockVals.sort((a, b) => b.count - a.count).slice(0, 5);
 
   subreddits.forEach((subreddit, index) => {
-    reddit.getSubreddit(subreddit).getTop({time: 'day', limit: 100}).then(listings => {
+    reddit.getSubreddit(subreddit).getTop({time: 'day', limit: 250}).then(listings => {
       for (let i = 0; i < listings.length; i++) {
         if (!listings[i].title) return;
         for (let j = 0; j < stockTitles.length; j++) {
