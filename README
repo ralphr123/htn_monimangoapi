@@ -1,1 +1,5 @@
-Api for HTN Web App MoniMango
+Api for Hack the North Web App MoniMango. This was developed on a time crunch (< 2 days). Scrubs 3 subreddits for mentions of popular stock tickers. 
+
+Uses the IBM Watson tone analyzer API to examine the tone around the stocks and based on that, recommend whether to buy, hold, or sell.
+
+If I were to redo the project given more time, I would clean up, comment, and optimize the code. 
