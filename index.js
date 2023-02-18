@@ -110,6 +110,14 @@ app.get('/nexmo', (req, res) => {
 });
 
 app.get('/reddit', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': true
+  });
+
   let stocks = {...stockData};
   let stockTitles = Object.keys(stocks);
   const subreddits = ['stocks', 'investing', 'wallstreetbets'];
@@ -152,13 +160,6 @@ app.get('/reddit', (req, res) => {
                 topFive[ind] = {...stock, action, tone}
 
                 if (ind === 4) {
-                  res.writeHead(200, {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
-                    'Access-Control-Allow-Headers': 'Content-Type',
-                    'Access-Control-Allow-Credentials': true
-                  });
                   res.end(JSON.stringify(topFive));
                   return;
                 }
